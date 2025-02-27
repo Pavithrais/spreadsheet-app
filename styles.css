@@ -1,0 +1,33 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    margin: auto;
+    width: 60%;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    min-width: 100px;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+td input {
+    width: 100%;
+    border: none;
+    text-align: center;
+}
+
+td input:focus {
+    outline: none;
+    background-color: #f0f8ff;
+}
