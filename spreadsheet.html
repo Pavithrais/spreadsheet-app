@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spreadsheet Clone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 20px auto;
+            background-color: white;
+        }
+        th, td {
+            border: 1px solid black;
+            width: 100px;
+            height: 30px;
+            text-align: center;
+            position: relative;
+            background-color: #e8f5e9; /* Light green */
+        }
+        input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            background: transparent;
+        }
+        button {
+            margin: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .add-btn { background-color: #4caf50; color: white; border: none; }
+        .del-btn { background-color: #f44336; color: white; border: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Google Sheets Clone</h2>
+    <button class="add-btn" onclick="addRow()">➕ Add Row</button>
+    <button class="add-btn" onclick="addColumn()">➕ Add Column</button>
+    <button class="del-btn" onclick="deleteRow()">❌ Delete Row</button>
+    <button class="del-btn" onclick="deleteColumn()">❌ Delete Column</button>
+    <table id="spreadsheet">
+        <tbody></tbody>
+    </table>
+
+    <script>
+        let rows = 10;
+        let cols = 10;
+
+        // Create a dynamic spreadsheet
+        function createSpreadsheet() {
+            let table = document.getElementById("spreadsheet").getElementsByTagName("tbody")[0];
+            table.innerHTML = ""; 
+
+            for (let i = 0; i < rows; i++) {
+                let row = table.insertRow();
+                for (let j = 0; j < cols; j++) {
+                    let cell = row.insertCell();
+                    let input = document.createElement("input");
+                    input.type = "text";
+                    input.setAttribute("data-row", i);
+                    input.setAttribute("data-col", j);
+                    input.oninput = () => calculateFormula(input, i, j);
+                    cell.appendChild(input);
+                }
+            }
+        }
+
+        // Function to calculate formulas
+        function calculateFormula(input, row, col) {
+            let value = input.value.trim();
+            
+            if (value.startsWith("=")) {
+                try {
+                    let formula = value.substring(1).toUpperCase(); // Remove "=" and convert to uppercase
+
+                    if (formula.startsWith("SUM(")) {
+                        let range = formula.match(/\((.*?)\)/)[1];
+                        let cells = range.split(":");
+                        let sum = 0;
+
+                        if (cells.length === 2) {
+                            let start = parseCell(cells[0]);
+                            let end = parseCell(cells[1]);
+
+                            for (let i = start.row; i <= end.row; i++) {
+                                for (let j = start.col; j <= end.col; j++) {
+                                    let cellValue = getCellValue(i, j);
+                                    sum += isNaN(cellValue) ? 0 : parseFloat(cellValue);
+                                }
+                            }
+                        }
+                        input.value = sum;
+                    } else {
+                        // Handle basic arithmetic
+                        let expression = formula.replace(/([A-Z]\d+)/g, match => {
+                            let cell = parseCell(match);
+                            return getCellValue(cell.row, cell.col) || "0";
+                        });
+
+                        input.value = eval(expression); // Calculate result
+                    }
+                } catch (error) {
+                    input.value = "ERROR";
+                }
+            }
+        }
+
+        // Function to parse a cell reference (A1 → row 0, col 0)
+        function parseCell(ref) {
+            let col = ref.charCodeAt(0) - 65; // Convert A, B, C → 0, 1, 2
+            let row = parseInt(ref.substring(1)) - 1;
+            return { row, col };
+        }
+
+        // Get value from a specific cell
+        function getCellValue(row, col) {
+            let table = document.getElementById("spreadsheet");
+            let cell = table.rows[row]?.cells[col]?.getElementsByTagName("input")[0];
+            return cell ? cell.value : "";
+        }
+
+        // Add a new row
+        function addRow() {
+            rows++;
+            createSpreadsheet();
+        }
+
+        // Add a new column
+        function addColumn() {
+            cols++;
+            createSpreadsheet();
+        }
+
+        // Delete last row
+        function deleteRow() {
+            if (rows > 1) {
+                rows--;
+                createSpreadsheet();
+            }
+        }
+
+        // Delete last column
+        function deleteColumn() {
+            if (cols > 1) {
+                cols--;
+                createSpreadsheet();
+            }
+        }
+
+        // Initialize Spreadsheet
+        createSpreadsheet();
+    </script>
+
+</body>
+</html>
